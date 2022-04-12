@@ -1,6 +1,6 @@
 
 var myMap = L.map("map", {
-    center: [37.7749, -122.4194],
+    center: [32, -12],
     zoom: 3
   });
 
@@ -15,35 +15,28 @@ var streetmap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 }).addTo(myMap);
 
 function circleSize(mag){
-  return mag**5 *10000
+  return mag**5 *100
 };
-function colorCircle(mag){
-  var color= 'green';
-  if(mag>6){
-    color = 'red';
-  }
-  else if(mag>3.5){
-    color='yellow'
-  }
-  else {
-    color = 'green';
-  };
+function colorCircle(depth){
+  var color= `rgb(${parseInt((depth/50)**0.5*255)},${parseInt(((depth-50)/50)**2*255)},${40})`;
   return color
 };
 
-d3.json(url).then(url, function(data){
+d3.json(url).then(function(data){
+
     console.log(data)
-    for (var i = 0; i < response.length.features; i++) {
+  var i =0;
+    for (i = 0; i<data.features.length; i++) {
         var location = data.features[i].geometry.coordinates;
-        console.log(location)
-        var magnitude = data[i].properties.mag
+        var mag = data.features[i].properties.mag;
+
         if (location) {
-          L.circle([location.coordinates[1], location.coordinates[0]], {
-            color: colorCircle(mag),
-            fillColor: colorCircle(mag),
+          L.circle([location[1], location[0]], {
+            color: colorCircle(location[2]),
+            fillColor: colorCircle(location[2]),
             fillOpacity: 0.5,
             radius: circleSize(mag)
-          }).addTo(myMap);
+          }).bindTooltip(`<h3>${data.features[i].properties.title}</h3><h4>Epicenter at a depth of ${location[2]}</h4>`).addTo(myMap);
         }
       } 
 });
